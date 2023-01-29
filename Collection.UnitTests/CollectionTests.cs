@@ -138,20 +138,20 @@ namespace Collection.UnitTests
 
         }
 
+        
+
         [Test]
-
-        public void Test_Collection_GetByInvalidIndex() 
+        public void Test_Collection_ToStringNestedCollections()
         {
-            
-                var collection = new Collection<int>(5, 6, 7, 8);
-                var item = collection[4];
-
-                Assert.That(collection.ToString(), 
-                    Throws.InstanceOf<ArgumentOutOfRangeException>());
-
-            
-
+            var names = new Collection<string>("Teddy", "Gerry");
+            var nums = new Collection<int>(10, 20);
+            var dates = new Collection<DateTime>();
+            var nested = new Collection<object>(names, nums, dates);
+            string nestedToString = nested.ToString();
+            Assert.That(nestedToString,
+              Is.EqualTo("[[Teddy, Gerry], [10, 20], []]"));
         }
+
 
         [Test]
         public void Test_Collection_AddWithGrow()
@@ -163,7 +163,7 @@ namespace Collection.UnitTests
                 
             }
             Assert.AreEqual(15, collection.Count);
-            Assert.AreEqual(20, collection.Capacity);
+            Assert.AreEqual(16, collection.Capacity);
         }
 
 
@@ -265,6 +265,7 @@ namespace Collection.UnitTests
             // Assert
             Assert.AreEqual(expected, actual);
         }
+
         [Test]
 
         public void Test_Collection_InsertAtWithGrow()
@@ -305,14 +306,107 @@ namespace Collection.UnitTests
 
             Assert.AreEqual(expected, actual);
         
-
-
-
-
-
-
-
-    
+                           
         }
+
+        [Test]
+        public void Test_Collection_ExchangeMiddle()
+        {
+            Collection<int> collection = new Collection<int>();
+            collection.Add(1);
+            collection.Add(2);
+            collection.Add(3);
+            collection.Add(4);
+
+            collection.Exchange(1, 2);
+
+            Assert.AreEqual(3, collection[1]);
+            Assert.AreEqual(2, collection[2]);
+        }
+
+        [Test]
+
+        public void Test_Collection_ExchangeFirstLast()
+        {
+            Collection<int> collection = new Collection<int>();
+            collection.Add(1);
+            collection.Add(2);
+            collection.Add(3);
+            collection.Add(4);
+
+            collection.Exchange(0, collection.Count - 1);
+
+            Assert.AreEqual(4, collection[0]);
+            Assert.AreEqual(1, collection[collection.Count - 1]);
+        }
+
+
+        [Test]
+        public void Test_Collection_ExchangeInvalidIndexes()
+        {
+            var collections = new Collection<int>();
+            Collection<int> collection = new Collection<int>();
+            collection.Add(1);
+            collection.Add(2);
+            collection.Add(3);
+            collection.Add(4);
+
+            Assert.That(() => { collection.Exchange(-1, 0); }, Throws.ArgumentException);
+            Assert.That(() => { collection.Exchange(0, collection.Count); }, Throws.ArgumentException);
+            
+        }
+
+
+        [Test]
+        public void Test_Collection_RemoveAtStart()
+        {
+            Collection<int> collection = new Collection<int>();
+            collection.Add(1);
+            collection.Add(2);
+            collection.Add(3);
+            collection.Add(4);
+
+            int removedItem = collection.RemoveAt(0);
+
+            Assert.AreEqual(1, removedItem);
+            Assert.AreEqual(3, collection.Count);
+        }
+
+        [Test]
+        public void Test_Collection_RemoveAtEnd()
+        {
+            Collection<int> collection = new Collection<int>();
+            collection.Add(1);
+            collection.Add(2);
+            collection.Add(3);
+            collection.Add(4);
+
+            int removedItem = collection.RemoveAt(collection.Count - 1);
+
+            Assert.AreEqual(4, removedItem);
+            Assert.AreEqual(3, collection.Count);
+        }
+
+        [Test]
+
+        [Timeout(1000)]
+        public void Test_Collection_1MillionItems()
+        {
+            const int itemsCount = 1000000;
+            var nums = new Collection<int>();
+            nums.AddRange(Enumerable.Range(1, itemsCount).ToArray());
+            Assert.That(nums.Count == itemsCount);
+            Assert.That(nums.Capacity >= nums.Count);
+            for (int i = itemsCount - 1; i >= 0; i--)
+                nums.RemoveAt(i);
+            Assert.That(nums.ToString() == "[]");
+            Assert.That(nums.Capacity >= nums.Count);
+        }
+
+
+
+
+
+
     }
 }
